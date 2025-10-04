@@ -18,6 +18,7 @@ A comprehensive ticketing system with SLA timers, assignments, threaded comments
 ## Tech Stack
 
 ### Backend
+
 - **Node.js** with **Express.js**
 - **TypeScript** for type safety
 - **MongoDB** with **Mongoose** ODM
@@ -26,6 +27,7 @@ A comprehensive ticketing system with SLA timers, assignments, threaded comments
 - **Morgan** for logging
 
 ### Frontend
+
 - **Next.js 15** with **React 19**
 - **TypeScript** for type safety
 - **Tailwind CSS** for styling
@@ -35,6 +37,7 @@ A comprehensive ticketing system with SLA timers, assignments, threaded comments
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js (v18 or higher)
 - MongoDB (local or cloud instance)
 - Git
@@ -42,39 +45,42 @@ A comprehensive ticketing system with SLA timers, assignments, threaded comments
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd helpdesk-mini
    ```
 
 2. **Backend Setup**
+
    ```bash
    cd backend
    npm install
-   
+
    # Copy environment variables
    cp example.env .env
-   
+
    # Update .env with your MongoDB URI and JWT secret
    # For local development:
    # MONGO_URI=mongodb://localhost:27017/helpdesk-mini
    # JWT_SECRET=your-super-secret-jwt-key
-   
+
    # Seed the database with test data
    npm run seed
-   
+
    # Start the development server
    npm run dev
    ```
 
 3. **Frontend Setup**
+
    ```bash
    cd frontend
    npm install
-   
+
    # Create .env.local
    echo "NEXT_PUBLIC_API_URL=http://localhost:8000" > .env.local
-   
+
    # Start the development server
    npm run dev
    ```
@@ -86,11 +92,13 @@ A comprehensive ticketing system with SLA timers, assignments, threaded comments
 ## API Documentation
 
 ### Base URL
+
 `http://localhost:8000/api`
 
 ### Authentication Endpoints
 
 #### Register User
+
 ```http
 POST /api/auth/register
 Content-Type: application/json
@@ -104,6 +112,7 @@ Content-Type: application/json
 ```
 
 #### Login
+
 ```http
 POST /api/auth/login
 Content-Type: application/json
@@ -115,6 +124,7 @@ Content-Type: application/json
 ```
 
 #### Get User Profile
+
 ```http
 GET /api/auth/me
 Authorization: Bearer <token>
@@ -123,6 +133,7 @@ Authorization: Bearer <token>
 ### Ticket Endpoints
 
 #### Create Ticket
+
 ```http
 POST /api/tickets
 Authorization: Bearer <token>
@@ -138,18 +149,21 @@ Idempotency-Key: <optional-unique-key>
 ```
 
 #### Get Tickets (with pagination and filters)
+
 ```http
 GET /api/tickets?limit=20&offset=0&status=open&priority=high&search=mobile
 Authorization: Bearer <token>
 ```
 
 #### Get Single Ticket
+
 ```http
 GET /api/tickets/<ticket-id>
 Authorization: Bearer <token>
 ```
 
 #### Update Ticket
+
 ```http
 PATCH /api/tickets/<ticket-id>
 Authorization: Bearer <token>
@@ -164,6 +178,7 @@ Content-Type: application/json
 ```
 
 #### Get SLA Breached Tickets
+
 ```http
 GET /api/tickets/breached?limit=20&offset=0
 Authorization: Bearer <token>
@@ -172,6 +187,7 @@ Authorization: Bearer <token>
 ### Comment Endpoints
 
 #### Create Comment
+
 ```http
 POST /api/tickets/<ticket-id>/comments
 Authorization: Bearer <token>
@@ -185,12 +201,14 @@ Idempotency-Key: <optional-unique-key>
 ```
 
 #### Get Comments
+
 ```http
 GET /api/tickets/<ticket-id>/comments?limit=20&offset=0
 Authorization: Bearer <token>
 ```
 
 #### Get Timeline
+
 ```http
 GET /api/tickets/<ticket-id>/timeline?limit=20&offset=0
 Authorization: Bearer <token>
@@ -199,16 +217,19 @@ Authorization: Bearer <token>
 ### System Endpoints
 
 #### Health Check
+
 ```http
 GET /api/health
 ```
 
 #### API Metadata
+
 ```http
 GET /api/_meta
 ```
 
 #### Hackathon Manifest
+
 ```http
 GET /.well-known/hackathon.json
 ```
@@ -216,12 +237,15 @@ GET /.well-known/hackathon.json
 ## Test Credentials
 
 ### Pre-seeded Users
+
 - **Admin**: `admin@test.com` / `admin123`
-- **Agent**: `agent@test.com` / `agent123`  
+- **Agent**: `agent@test.com` / `agent123`
 - **User**: `user@test.com` / `user123`
 
 ### Sample Data
+
 The seed script creates:
+
 - 3 test users with different roles
 - 4 sample tickets with various priorities and statuses
 - Sample comments and timeline entries
@@ -230,11 +254,15 @@ The seed script creates:
 ## API Features
 
 ### Pagination
+
 All list endpoints support pagination:
+
 ```http
 GET /api/tickets?limit=20&offset=40
 ```
+
 Response:
+
 ```json
 {
   "tickets": [...],
@@ -248,17 +276,21 @@ Response:
 ```
 
 ### Rate Limiting
+
 - **Limit**: 60 requests per minute per user
 - **Header**: Applied per authenticated user
 - **Response**: `429` status with `{"error": {"code": "RATE_LIMIT"}}`
 
 ### Idempotency
+
 - **Header**: `Idempotency-Key` for POST requests
 - **Duration**: 24 hours
 - **Scope**: Per user + endpoint + content hash
 
 ### Error Format
+
 Consistent error response format:
+
 ```json
 {
   "error": {
@@ -270,18 +302,21 @@ Consistent error response format:
 ```
 
 ### SLA Calculation
+
 - **Critical**: 2 hours
-- **High**: 8 hours  
+- **High**: 8 hours
 - **Medium**: 24 hours
 - **Low**: 72 hours
 
 ## Frontend Pages
 
 ### Authentication Pages
+
 - `/login` - User login
 - `/register` - User registration
 
-### Main Pages  
+### Main Pages
+
 - `/` - Landing page (redirects to tickets if logged in)
 - `/tickets` - Ticket list with filters and pagination
 - `/tickets/new` - Create new ticket (agents/admins only)
@@ -290,11 +325,13 @@ Consistent error response format:
 ## Role Permissions
 
 ### User
+
 - View own tickets
 - Create comments on own tickets
 - View timeline for own tickets
 
-### Agent  
+### Agent
+
 - All User permissions
 - Create tickets
 - View all tickets
@@ -303,7 +340,8 @@ Consistent error response format:
 - View breached SLA tickets
 
 ### Admin
-- All Agent permissions  
+
+- All Agent permissions
 - Access to all tickets regardless of assignment
 - Full CRUD operations
 - User management capabilities
@@ -321,6 +359,7 @@ Consistent error response format:
 ## Development
 
 ### Backend Scripts
+
 ```bash
 npm run dev          # Start development server
 npm run build        # Build for production
@@ -329,23 +368,10 @@ npm run seed         # Populate with test data
 ```
 
 ### Frontend Scripts
+
 ```bash
-npm run dev          # Start development server  
+npm run dev          # Start development server
 npm run build        # Build for production
 npm run start        # Start production server
 npm run lint         # Run ESLint
 ```
-
-## Judge Evaluation Criteria
-
-This implementation addresses all hackathon requirements:
-
-- ✅ **API Correctness**: All required endpoints implemented and tested
-- ✅ **Robustness**: Pagination, idempotency, rate limiting, authentication/RBAC
-- ✅ **Frontend UI**: Complete ticket management interface
-- ✅ **Code Quality**: TypeScript, proper error handling, comprehensive documentation
-- ✅ **Hackathon Compliance**: All required endpoints (`/api/health`, `/api/_meta`, `/.well-known/hackathon.json`)
-
-## License
-
-MIT License - see LICENSE file for details.
