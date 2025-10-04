@@ -12,7 +12,7 @@ export const apiClient = axios.create({
 // Add auth token to requests
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
-  if (token) {
+  if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
@@ -71,12 +71,12 @@ export interface TimelineLog {
   action: string;
   description: string;
   userId: User;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   createdAt: string;
 }
 
 export interface PaginatedResponse<T> {
-  [key: string]: T[];
+  [key: string]: T[] | unknown;
   pagination: {
     limit: number;
     offset: number;
@@ -86,7 +86,7 @@ export interface PaginatedResponse<T> {
 }
 
 export interface ApiResponse<T> {
-  [key: string]: T;
+  [key: string]: T | unknown;
   message: string;
 }
 
@@ -106,23 +106,23 @@ export const authApi = {
     name: string;
     role?: string;
   }) => {
-    const response = await apiClient.post<ApiResponse<{ user: User; token: string }>>(
-      "/api/auth/register",
-      data
-    );
+    const response = await apiClient.post<
+      ApiResponse<{ user: User; token: string }>
+    >("/api/auth/register", data);
     return response.data;
   },
 
   login: async (data: { email: string; password: string }) => {
-    const response = await apiClient.post<ApiResponse<{ user: User; token: string }>>(
-      "/api/auth/login",
-      data
-    );
+    const response = await apiClient.post<
+      ApiResponse<{ user: User; token: string }>
+    >("/api/auth/login", data);
     return response.data;
   },
 
   getMe: async () => {
-    const response = await apiClient.get<ApiResponse<{ user: User }>>("/api/auth/me");
+    const response = await apiClient.get<ApiResponse<{ user: User }>>(
+      "/api/auth/me"
+    );
     return response.data;
   },
 };
@@ -150,10 +150,9 @@ export const ticketsApi = {
     assignedTo?: string;
     search?: string;
   }) => {
-    const response = await apiClient.get<PaginatedResponse<{ tickets: Ticket[] }>>(
-      "/api/tickets",
-      { params }
-    );
+    const response = await apiClient.get<
+      PaginatedResponse<{ tickets: Ticket[] }>
+    >("/api/tickets", { params });
     return response.data;
   },
 
@@ -164,7 +163,7 @@ export const ticketsApi = {
     return response.data;
   },
 
-  updateTicket: async (id: string, data: any) => {
+  updateTicket: async (id: string, data: Record<string, unknown>) => {
     const response = await apiClient.patch<ApiResponse<{ ticket: Ticket }>>(
       `/api/tickets/${id}`,
       data
@@ -172,24 +171,23 @@ export const ticketsApi = {
     return response.data;
   },
 
-  getBreachedTickets: async (params?: {
-    limit?: number;
-    offset?: number;
-  }) => {
-    const response = await apiClient.get<PaginatedResponse<{ tickets: Ticket[] }>>(
-      "/api/tickets/breached",
-      { params }
-    );
+  getBreachedTickets: async (params?: { limit?: number; offset?: number }) => {
+    const response = await apiClient.get<
+      PaginatedResponse<{ tickets: Ticket[] }>
+    >("/api/tickets/breached", { params });
     return response.data;
   },
 };
 
 // Comments API
 export const commentsApi = {
-  createComment: async (ticketId: string, data: {
-    content: string;
-    parentComment?: string;
-  }) => {
+  createComment: async (
+    ticketId: string,
+    data: {
+      content: string;
+      parentComment?: string;
+    }
+  ) => {
     const response = await apiClient.post<ApiResponse<{ comment: Comment }>>(
       `/api/tickets/${ticketId}/comments`,
       data
@@ -197,25 +195,29 @@ export const commentsApi = {
     return response.data;
   },
 
-  getComments: async (ticketId: string, params?: {
-    limit?: number;
-    offset?: number;
-  }) => {
-    const response = await apiClient.get<PaginatedResponse<{ comments: Comment[] }>>(
-      `/api/tickets/${ticketId}/comments`,
-      { params }
-    );
+  getComments: async (
+    ticketId: string,
+    params?: {
+      limit?: number;
+      offset?: number;
+    }
+  ) => {
+    const response = await apiClient.get<
+      PaginatedResponse<{ comments: Comment[] }>
+    >(`/api/tickets/${ticketId}/comments`, { params });
     return response.data;
   },
 
-  getTimeline: async (ticketId: string, params?: {
-    limit?: number;
-    offset?: number;
-  }) => {
-    const response = await apiClient.get<PaginatedResponse<{ timeline: TimelineLog[] }>>(
-      `/api/tickets/${ticketId}/timeline`,
-      { params }
-    );
+  getTimeline: async (
+    ticketId: string,
+    params?: {
+      limit?: number;
+      offset?: number;
+    }
+  ) => {
+    const response = await apiClient.get<
+      PaginatedResponse<{ timeline: TimelineLog[] }>
+    >(`/api/tickets/${ticketId}/timeline`, { params });
     return response.data;
   },
 };

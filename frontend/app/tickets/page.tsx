@@ -1,13 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { useAuth } from "@/contexts/AuthContext";
-import { ticketsApi, Ticket } from "@/lib/api";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription } from "@/components/ui/card";
 import Layout from "@/components/Layout";
-import { formatDate, getPriorityColor, getStatusColor, isSLABreached } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
+import { Ticket, ticketsApi } from "@/lib/api";
+import {
+  formatDate,
+  getPriorityColor,
+  getStatusColor,
+  isSLABreached,
+} from "@/lib/utils";
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
 
 export default function TicketsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -23,29 +28,46 @@ export default function TicketsPage() {
   const [hasNext, setHasNext] = useState(false);
   const limit = 20;
 
-  const loadTickets = async (offset = 0) => {
-    setLoading(true);
-    try {
-      const response = await ticketsApi.getTickets({
-        limit,
-        offset,
-        ...filters,
-      });
-      setTickets(response.tickets);
-      setHasNext(!!response.pagination.next_offset);
-      setCurrentPage(Math.floor(offset / limit));
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message || "Failed to load tickets");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const loadTickets = useCallback(
+    async (offset = 0) => {
+      setLoading(true);
+      try {
+        const response = await ticketsApi.getTickets({
+          limit,
+          offset,
+          ...filters,
+        });
+        setTickets((response as unknown as { tickets: Ticket[] }).tickets);
+        setHasNext(
+          !!(
+            response as unknown as {
+              pagination?: { next_offset: number | null };
+            }
+          ).pagination?.next_offset
+        );
+        setCurrentPage(Math.floor(offset / limit));
+      } catch (err: unknown) {
+        setError(
+          err && typeof err === "object" && "response" in err
+            ? (
+                err as {
+                  response?: { data?: { error?: { message?: string } } };
+                }
+              ).response?.data?.error?.message || "Failed to load tickets"
+            : "Failed to load tickets"
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [filters, limit]
+  );
 
   useEffect(() => {
     if (!authLoading && user) {
       loadTickets();
     }
-  }, [authLoading, user, filters]);
+  }, [authLoading, user, filters, loadTickets]);
 
   if (authLoading) {
     return (
@@ -62,7 +84,9 @@ export default function TicketsPage() {
       <Layout>
         <div className="text-center py-8">
           <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
-          <p className="text-gray-600 mb-4">You need to be logged in to view tickets.</p>
+          <p className="text-gray-600 mb-4">
+            You need to be logged in to view tickets.
+          </p>
           <Button asChild>
             <Link href="/login">Login</Link>
           </Button>
@@ -72,7 +96,7 @@ export default function TicketsPage() {
   }
 
   const handleFilterChange = (key: string, value: string) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    setFilters((prev) => ({ ...prev, [key]: value }));
     setCurrentPage(0);
   };
 
@@ -120,14 +144,16 @@ export default function TicketsPage() {
                   <option value="closed">Closed</option>
                 </select>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Priority
                 </label>
                 <select
                   value={filters.priority}
-                  onChange={(e) => handleFilterChange("priority", e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("priority", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">All Priorities</option>
@@ -137,7 +163,7 @@ export default function TicketsPage() {
                   <option value="critical">Critical</option>
                 </select>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Search
@@ -150,7 +176,7 @@ export default function TicketsPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              
+
               <div className="flex items-end">
                 <Button
                   variant="outline"
@@ -189,10 +215,9 @@ export default function TicketsPage() {
                       No tickets found
                     </h3>
                     <p className="text-gray-600 mb-4">
-                      {Object.values(filters).some(f => f) 
-                        ? "Try adjusting your filters" 
-                        : "No tickets have been created yet"
-                      }
+                      {Object.values(filters).some((f) => f)
+                        ? "Try adjusting your filters"
+                        : "No tickets have been created yet"}
                     </p>
                     {["agent", "admin"].includes(user.role) && (
                       <Button asChild>
@@ -204,7 +229,10 @@ export default function TicketsPage() {
               </Card>
             ) : (
               tickets.map((ticket) => (
-                <Card key={ticket._id} className="hover:shadow-md transition-shadow">
+                <Card
+                  key={ticket._id}
+                  className="hover:shadow-md transition-shadow"
+                >
                   <CardContent>
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
@@ -214,10 +242,18 @@ export default function TicketsPage() {
                               {ticket.title}
                             </h3>
                           </Link>
-                          <span className={`px-2 py-1 text-xs rounded ${getStatusColor(ticket.status)}`}>
+                          <span
+                            className={`px-2 py-1 text-xs rounded ${getStatusColor(
+                              ticket.status
+                            )}`}
+                          >
                             {ticket.status.replace("_", " ")}
                           </span>
-                          <span className={`px-2 py-1 text-xs rounded ${getPriorityColor(ticket.priority)}`}>
+                          <span
+                            className={`px-2 py-1 text-xs rounded ${getPriorityColor(
+                              ticket.priority
+                            )}`}
+                          >
                             {ticket.priority}
                           </span>
                           {isSLABreached(ticket.slaDeadline) && (
@@ -226,11 +262,11 @@ export default function TicketsPage() {
                             </span>
                           )}
                         </div>
-                        
+
                         <p className="text-gray-600 text-sm mb-2 line-clamp-2">
                           {ticket.description}
                         </p>
-                        
+
                         <div className="flex items-center space-x-4 text-xs text-gray-500">
                           <span>Created by {ticket.createdBy.name}</span>
                           <span>•</span>

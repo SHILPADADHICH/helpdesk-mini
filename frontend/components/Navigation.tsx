@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { cn, formatRelativeTime } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 export default function Navigation() {
   const { user, logout } = useAuth();
@@ -37,25 +37,25 @@ export default function Navigation() {
           <Link href="/tickets" className="text-xl font-bold text-gray-900">
             HelpDesk Mini
           </Link>
-          
+
           <div className="flex items-center space-x-6">
             <div className="flex space-x-4">
-              <Link 
-                href="/tickets" 
+              <Link
+                href="/tickets"
                 className="text-gray-600 hover:text-gray-900 transition-colors"
               >
                 Tickets
               </Link>
               {["agent", "admin"].includes(user.role) && (
                 <>
-                  <Link 
-                    href="/tickets/breached" 
+                  <Link
+                    href="/tickets/breached"
                     className="text-gray-600 hover:text-gray-900 transition-colors"
                   >
                     Breached SLA
                   </Link>
-                  <Link 
-                    href="/tickets/new" 
+                  <Link
+                    href="/tickets/new"
                     className="text-gray-600 hover:text-gray-900 transition-colors"
                   >
                     New Ticket
@@ -63,16 +63,18 @@ export default function Navigation() {
                 </>
               )}
             </div>
-            
+
             <div className="flex items-center space-x-3">
               <div className="text-sm">
                 <div className="font-medium text-gray-900">{user.name}</div>
-                <div className={cn(
-                  "text-xs",
-                  user.role === "admin" && "text-red-600",
-                  user.role === "agent" && "text-blue-600", 
-                  user.role === "user" && "text-gray-600"
-                )}>
+                <div
+                  className={cn(
+                    "text-xs",
+                    user.role === "admin" && "text-red-600",
+                    user.role === "agent" && "text-blue-600",
+                    user.role === "user" && "text-gray-600"
+                  )}
+                >
                   {user.role.toUpperCase()}
                 </div>
               </div>

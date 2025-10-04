@@ -1,54 +1,83 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useAuth } from "@/contexts/AuthContext";
-import { ticketsApi, commentsApi, Ticket, Comment, TimelineLog } from "@/lib/api";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Layout from "@/components/Layout";
-import { formatDate, formatRelativeTime, getPriorityColor, getStatusColor, isSLABreached, getSLATimeRemaining } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  Comment,
+  commentsApi,
+  Ticket,
+  ticketsApi,
+  TimelineLog,
+} from "@/lib/api";
+import {
+  formatDate,
+  formatRelativeTime,
+  getPriorityColor,
+  getSLATimeRemaining,
+  getStatusColor,
+  isSLABreached,
+} from "@/lib/utils";
+import { useParams, useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 
 export default function TicketDetailPage() {
   const { id } = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  
+
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [timeline, setTimeline] = useState<TimelineLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  
+
   const [newComment, setNewComment] = useState("");
   const [addingComment, setAddingComment] = useState(false);
   const [showComments, setShowComments] = useState(true);
   const [showTimeline, setShowTimeline] = useState(true);
 
+  const loadTicketData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [ticketResponse, commentsResponse, timelineResponse] =
+        await Promise.all([
+          ticketsApi.getTicket(id as string),
+          commentsApi.getComments(id as string),
+          commentsApi.getTimeline(id as string),
+        ]);
+
+      setTicket((ticketResponse as unknown as { ticket: Ticket }).ticket);
+      setComments(
+        (commentsResponse as unknown as { comments: Comment[] }).comments
+      );
+      setTimeline(
+        (timelineResponse as unknown as { timeline: TimelineLog[] }).timeline
+      );
+    } catch (err: unknown) {
+      setError(
+        err && typeof err === "object" && "response" in err
+          ? (err as { response?: { data?: { error?: { message?: string } } } })
+              .response?.data?.error?.message || "Failed to load ticket data"
+          : "Failed to load ticket data"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
   useEffect(() => {
     if (!authLoading && user) {
       loadTicketData();
     }
-  }, [authLoading, user, id]);
-
-  const loadTicketData = async () => {
-    setLoading(true);
-    try {
-      const [ticketResponse, commentsResponse, timelineResponse] = await Promise.all([
-        ticketsApi.getTicket(id as string),
-        commentsApi.getComments(id as string),
-        commentsApi.getTimeline(id as string),
-      ]);
-      
-      setTicket(ticketResponse.ticket);
-      setComments(commentsResponse.comments);
-      setTimeline(timelineResponse.timeline);
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message || "Failed to load ticket data");
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [authLoading, user, id, loadTicketData]);
 
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,8 +88,13 @@ export default function TicketDetailPage() {
       await commentsApi.createComment(id as string, { content: newComment });
       setNewComment("");
       await loadTicketData(); // Reload to get updated comments and timeline
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message || "Failed to add comment");
+    } catch (err: unknown) {
+      setError(
+        err && typeof err === "object" && "response" in err
+          ? (err as { response?: { data?: { error?: { message?: string } } } })
+              .response?.data?.error?.message || "Failed to add comment"
+          : "Failed to add comment"
+      );
     } finally {
       setAddingComment(false);
     }
@@ -73,8 +107,13 @@ export default function TicketDetailPage() {
         version: ticket?.version,
       });
       await loadTicketData();
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message || "Failed to update ticket");
+    } catch (err: unknown) {
+      setError(
+        err && typeof err === "object" && "response" in err
+          ? (err as { response?: { data?: { error?: { message?: string } } } })
+              .response?.data?.error?.message || "Failed to update ticket"
+          : "Failed to update ticket"
+      );
     }
   };
 
@@ -93,7 +132,9 @@ export default function TicketDetailPage() {
       <Layout>
         <div className="text-center py-8">
           <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
-          <p className="text-gray-600 mb-4">You need to be logged in to view tickets.</p>
+          <p className="text-gray-600 mb-4">
+            You need to be logged in to view tickets.
+          </p>
           <Button asChild>
             <button onClick={() => router.push("/login")}>Login</button>
           </Button>
@@ -129,19 +170,27 @@ export default function TicketDetailPage() {
       <Layout>
         <div className="text-center py-8">
           <h1 className="text-2xl font-bold mb-4">Ticket Not Found</h1>
-          <p className="text-gray-600 mb-4">The ticket you're looking for doesn't exist.</p>
-          <Button onClick={() => router.push("/tickets")}>Back to Tickets</Button>
+          <p className="text-gray-600 mb-4">
+            The ticket you&apos;re looking for doesn&apos;t exist.
+          </p>
+          <Button onClick={() => router.push("/tickets")}>
+            Back to Tickets
+          </Button>
         </div>
       </Layout>
     );
   }
 
   // Check permissions
-  const canEdit = ["agent", "admin"].includes(user.role) || 
-    (ticket.createdBy._id === user._id || ticket.assignedTo?._id === user._id);
+  const canEdit =
+    ["agent", "admin"].includes(user.role) ||
+    ticket.createdBy._id === user._id ||
+    ticket.assignedTo?._id === user._id;
 
   const slaBreached = isSLABreached(ticket.slaDeadline);
-  const slaStatus = slaBreached ? "Overdue" : getSLATimeRemaining(ticket.slaDeadline);
+  const slaStatus = slaBreached
+    ? "Overdue"
+    : getSLATimeRemaining(ticket.slaDeadline);
 
   return (
     <Layout>
@@ -149,7 +198,9 @@ export default function TicketDetailPage() {
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">{ticket.title}</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              {ticket.title}
+            </h1>
             <div className="flex items-center space-x-2 text-sm text-gray-600">
               <span>#{ticket._id.slice(-8)}</span>
               <span>•</span>
@@ -182,14 +233,23 @@ export default function TicketDetailPage() {
               <div>
                 <CardTitle className="text-xl">{ticket.title}</CardTitle>
                 <CardDescription>
-                  Created by {ticket.createdBy.name} • {formatDate(ticket.createdAt)}
+                  Created by {ticket.createdBy.name} •{" "}
+                  {formatDate(ticket.createdAt)}
                 </CardDescription>
               </div>
               <div className="flex space-x-2">
-                <span className={`px-3 py-1 text-sm rounded-full ${getStatusColor(ticket.status)}`}>
+                <span
+                  className={`px-3 py-1 text-sm rounded-full ${getStatusColor(
+                    ticket.status
+                  )}`}
+                >
                   {ticket.status.replace("_", " ")}
                 </span>
-                <span className={`px-3 py-1 text-sm rounded-full ${getPriorityColor(ticket.priority)}`}>
+                <span
+                  className={`px-3 py-1 text-sm rounded-full ${getPriorityColor(
+                    ticket.priority
+                  )}`}
+                >
                   {ticket.priority}
                 </span>
                 {slaBreached && (
@@ -204,25 +264,41 @@ export default function TicketDetailPage() {
             <div className="space-y-4">
               <div>
                 <h4 className="font-medium text-gray-900 mb-2">Description</h4>
-                <p className="text-gray-700 whitespace-pre-wrap">{ticket.description}</p>
+                <p className="text-gray-700 whitespace-pre-wrap">
+                  {ticket.description}
+                </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <h4 className="font-medium text-gray-900 mb-1">Priority</h4>
-                  <p className={`text-sm px-2 py-1 rounded ${getPriorityColor(ticket.priority)}`}>
+                  <p
+                    className={`text-sm px-2 py-1 rounded ${getPriorityColor(
+                      ticket.priority
+                    )}`}
+                  >
                     {ticket.priority}
                   </p>
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-900 mb-1">Status</h4>
-                  <p className={`text-sm px-2 py-1 rounded ${getStatusColor(ticket.status)}`}>
+                  <p
+                    className={`text-sm px-2 py-1 rounded ${getStatusColor(
+                      ticket.status
+                    )}`}
+                  >
                     {ticket.status.replace("_", " ")}
                   </p>
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-900 mb-1">SLA Status</h4>
-                  <p className={`text-sm px-2 py-1 rounded ${slaBreached ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}>
+                  <p
+                    className={`text-sm px-2 py-1 rounded ${
+                      slaBreached
+                        ? "bg-red-100 text-red-800"
+                        : "bg-green-100 text-green-800"
+                    }`}
+                  >
                     {slaStatus}
                   </p>
                 </div>
@@ -230,14 +306,18 @@ export default function TicketDetailPage() {
 
               {ticket.assignedTo && (
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-1">Assigned To</h4>
+                  <h4 className="font-medium text-gray-900 mb-1">
+                    Assigned To
+                  </h4>
                   <p className="text-gray-700">{ticket.assignedTo.name}</p>
                 </div>
               )}
 
               {canEdit && (
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Quick Actions</h4>
+                  <h4 className="font-medium text-gray-900 mb-2">
+                    Quick Actions
+                  </h4>
                   <div className="flex space-x-2">
                     <select
                       value={ticket.status}
@@ -285,7 +365,10 @@ export default function TicketDetailPage() {
                     placeholder="Write your comment here..."
                     disabled={addingComment}
                   />
-                  <Button type="submit" disabled={addingComment || !newComment.trim()}>
+                  <Button
+                    type="submit"
+                    disabled={addingComment || !newComment.trim()}
+                  >
                     {addingComment ? "Adding..." : "Add Comment"}
                   </Button>
                 </form>
@@ -295,11 +378,15 @@ export default function TicketDetailPage() {
                   {comments.map((comment) => (
                     <div key={comment._id} className="border-l-2 pl-4 py-2">
                       <div className="flex items-center space-x-2 text-sm text-gray-600 mb-1">
-                        <span className="font-medium">{comment.author.name}</span>
+                        <span className="font-medium">
+                          {comment.author.name}
+                        </span>
                         <span>•</span>
                         <span>{formatRelativeTime(comment.createdAt)}</span>
                       </div>
-                      <p className="text-gray-800 whitespace-pre-wrap">{comment.content}</p>
+                      <p className="text-gray-800 whitespace-pre-wrap">
+                        {comment.content}
+                      </p>
                     </div>
                   ))}
                   {comments.length === 0 && (
@@ -342,7 +429,9 @@ export default function TicketDetailPage() {
                   </div>
                 ))}
                 {timeline.length === 0 && (
-                  <p className="text-gray-500 italic">No timeline entries yet.</p>
+                  <p className="text-gray-500 italic">
+                    No timeline entries yet.
+                  </p>
                 )}
               </div>
             </CardContent>

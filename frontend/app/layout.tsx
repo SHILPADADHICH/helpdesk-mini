@@ -1,7 +1,6 @@
 "use client";
 
 import { ReactNode } from "react";
-import type { Metadata } from "next";
 
 import { Outfit } from "next/font/google";
 import "./globals.css";

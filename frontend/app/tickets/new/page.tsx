@@ -1,12 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import Layout from "@/components/Layout";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { ticketsApi, User } from "@/lib/api";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import Layout from "@/components/Layout";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function NewTicketPage() {
   const { user, loading: authLoading } = useAuth();
@@ -15,7 +21,7 @@ export default function NewTicketPage() {
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("medium");
   const [assignedTo, setAssignedTo] = useState("");
-  const [agents, setAgents] = useState<User[]>([]);
+  const [agents] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -38,8 +44,13 @@ export default function NewTicketPage() {
         assignedTo: assignedTo || undefined,
       });
       router.push("/tickets");
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message || "Failed to create ticket");
+    } catch (err: unknown) {
+      setError(
+        err && typeof err === "object" && "response" in err
+          ? (err as { response?: { data?: { error?: { message?: string } } } })
+              .response?.data?.error?.message || "Failed to create ticket"
+          : "Failed to create ticket"
+      );
     } finally {
       setLoading(false);
     }
@@ -60,7 +71,9 @@ export default function NewTicketPage() {
       <Layout>
         <div className="text-center py-8">
           <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
-          <p className="text-gray-600 mb-4">Only agents and admins can create tickets.</p>
+          <p className="text-gray-600 mb-4">
+            Only agents and admins can create tickets.
+          </p>
           <Button onClick={() => router.push("/tickets")}>
             Back to Tickets
           </Button>
@@ -73,7 +86,9 @@ export default function NewTicketPage() {
     <Layout>
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900">Create New Ticket</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Create New Ticket
+          </h1>
           <Button variant="outline" onClick={() => router.back()}>
             Cancel
           </Button>
@@ -93,9 +108,12 @@ export default function NewTicketPage() {
                   {error}
                 </div>
               )}
-              
+
               <div>
-                <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="title"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Title *
                 </label>
                 <input
@@ -108,9 +126,12 @@ export default function NewTicketPage() {
                   placeholder="Brief description of the issue"
                 />
               </div>
-              
+
               <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Description *
                 </label>
                 <textarea
@@ -123,10 +144,13 @@ export default function NewTicketPage() {
                   placeholder="Detailed description of the issue, steps to reproduce, etc."
                 />
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="priority"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Priority
                   </label>
                   <select
@@ -141,9 +165,12 @@ export default function NewTicketPage() {
                     <option value="critical">Critical</option>
                   </select>
                 </div>
-                
+
                 <div>
-                  <label htmlFor="assignedTo" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="assignedTo"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Assign To (Optional)
                   </label>
                   <select
@@ -161,12 +188,16 @@ export default function NewTicketPage() {
                   </select>
                 </div>
               </div>
-              
+
               <div className="flex space-x-4">
                 <Button type="submit" disabled={loading}>
                   {loading ? "Creating..." : "Create Ticket"}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => router.back()}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.back()}
+                >
                   Cancel
                 </Button>
               </div>

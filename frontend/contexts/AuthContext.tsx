@@ -1,13 +1,24 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, authApi } from "@/lib/api";
+import React, {
+  ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string, role?: string) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    name: string,
+    role?: string
+  ) => Promise<void>;
   logout: () => void;
   loading: boolean;
 }
@@ -40,10 +51,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         try {
           setToken(storedToken);
           setUser(JSON.parse(storedUser));
-          
+
           // Verify token is still valid
           const response = await authApi.getMe();
-          setUser(response.user);
+          setUser((response as any).user);
         } catch (error) {
           // Token is invalid, clear storage
           localStorage.removeItem("token");
@@ -59,11 +70,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     try {
       const response = await authApi.login({ email, password });
-      const { user: userData, token: tokenData } = response;
-      
+      const { user: userData, token: tokenData } = response as any;
+
       localStorage.setItem("token", tokenData);
       localStorage.setItem("user", JSON.stringify(userData));
-      
+
       setUser(userData);
       setToken(tokenData);
     } catch (error: any) {
@@ -71,18 +82,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const register = async (email: string, password: string, name: string, role = "user") => {
+  const register = async (
+    email: string,
+    password: string,
+    name: string,
+    role = "user"
+  ) => {
     try {
       const response = await authApi.register({ email, password, name, role });
-      const { user: userData, token: tokenData } = response;
-      
+      const { user: userData, token: tokenData } = response as any;
+
       localStorage.setItem("token", tokenData);
       localStorage.setItem("user", JSON.stringify(userData));
-      
+
       setUser(userData);
       setToken(tokenData);
     } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || "Registration failed");
+      throw new Error(
+        error.response?.data?.error?.message || "Registration failed"
+      );
     }
   };
 

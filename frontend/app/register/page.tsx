@@ -1,11 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -14,7 +20,7 @@ export default function RegisterPage() {
   const [role, setRole] = useState("user");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  
+
   const { register } = useAuth();
   const router = useRouter();
 
@@ -26,8 +32,8 @@ export default function RegisterPage() {
     try {
       await register(email, password, name, role);
       router.push("/tickets");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -40,7 +46,7 @@ export default function RegisterPage() {
           <h1 className="text-3xl font-bold text-gray-900">HelpDesk Mini</h1>
           <p className="mt-2 text-gray-600">Create your account</p>
         </div>
-        
+
         <Card>
           <CardHeader>
             <CardTitle>Sign Up</CardTitle>
@@ -55,9 +61,12 @@ export default function RegisterPage() {
                   {error}
                 </div>
               )}
-              
+
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Full Name
                 </label>
                 <input
@@ -70,9 +79,12 @@ export default function RegisterPage() {
                   placeholder="Enter your full name"
                 />
               </div>
-              
+
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Email
                 </label>
                 <input
@@ -85,9 +97,12 @@ export default function RegisterPage() {
                   placeholder="Enter your email"
                 />
               </div>
-              
+
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Password
                 </label>
                 <input
@@ -100,9 +115,12 @@ export default function RegisterPage() {
                   placeholder="Enter your password"
                 />
               </div>
-              
+
               <div>
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="role"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Role
                 </label>
                 <select
@@ -116,16 +134,19 @@ export default function RegisterPage() {
                   <option value="admin">Admin</option>
                 </select>
               </div>
-              
+
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Creating account..." : "Sign Up"}
               </Button>
             </form>
-            
+
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
                 Already have an account?{" "}
-                <Link href="/login" className="text-blue-600 hover:text-blue-500">
+                <Link
+                  href="/login"
+                  className="text-blue-600 hover:text-blue-500"
+                >
                   Sign in
                 </Link>
               </p>
