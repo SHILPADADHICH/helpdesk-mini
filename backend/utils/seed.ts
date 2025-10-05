@@ -1,14 +1,14 @@
 import bcrypt from "bcryptjs";
-import User from "../database/models/User";
-import Ticket from "../database/models/Ticket";
-import Comment from "../database/models/Comment";
-import TimelineLog from "../database/models/TimelineLog";
 import connectDB from "../database/connection/mongoose";
+import Comment from "../database/models/Comment";
+import Ticket from "../database/models/Ticket";
+import TimelineLog from "../database/models/TimelineLog";
+import User from "../database/models/User";
 
 export const seedDatabase = async () => {
   try {
     await connectDB();
-    
+
     // Clear existing data
     await User.deleteMany({});
     await Ticket.deleteMany({});
@@ -19,7 +19,7 @@ export const seedDatabase = async () => {
 
     // Create test users
     const admin = new User({
-      email: "admin@test.com",
+      email: "admin@mail.com",
       password: await bcrypt.hash("admin123", 12),
       name: "Admin User",
       role: "admin",
@@ -66,7 +66,8 @@ export const seedDatabase = async () => {
       },
       {
         title: "Database performance issue",
-        description: "Reports are taking too long to generate. Need optimization.",
+        description:
+          "Reports are taking too long to generate. Need optimization.",
         priority: "medium",
         createdBy: admin._id,
         assignedTo: agent._id,
@@ -126,10 +127,9 @@ export const seedDatabase = async () => {
 
     console.log("✅ Database seeded successfully!");
     console.log("\nTest credentials:");
-    console.log("Admin: admin@test.com / admin123");
+    console.log("Admin: admin@mail.com / admin123");
     console.log("Agent: agent@test.com / agent123");
     console.log("User: user@test.com / user123");
-
   } catch (error) {
     console.error("Seed error:", error);
   }

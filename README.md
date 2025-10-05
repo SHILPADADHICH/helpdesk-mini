@@ -238,7 +238,7 @@ GET /.well-known/hackathon.json
 
 ### Pre-seeded Users
 
-- **Admin**: `admin@test.com` / `admin123`
+- **Admin**: `admin@mail.com` / `admin123`
 - **Agent**: `agent@test.com` / `agent123`
 - **User**: `user@test.com` / `user123`
 

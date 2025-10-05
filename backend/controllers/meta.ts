@@ -4,8 +4,9 @@ import mongoose from "mongoose";
 export const health = async (req: Request, res: Response) => {
   try {
     // Check database connection
-    const dbStatus = mongoose.connection.readyState === 1 ? "connected" : "disconnected";
-    
+    const dbStatus =
+      mongoose.connection.readyState === 1 ? "connected" : "disconnected";
+
     res.status(200).json({
       status: "ok",
       timestamp: new Date().toISOString(),
@@ -27,7 +28,8 @@ export const meta = async (req: Request, res: Response) => {
     const apiInfo = {
       name: "HelpDesk Mini API",
       version: "1.0.0",
-      description: "Ticketing system with SLA timers, assignments, threaded comments, and role-based access",
+      description:
+        "Ticketing system with SLA timers, assignments, threaded comments, and role-based access",
       endpoints: {
         authentication: {
           "POST /api/auth/register": "Register a new user",
@@ -65,7 +67,8 @@ export const meta = async (req: Request, res: Response) => {
       ],
       pagination: {
         format: "?limit=20&offset=0",
-        response: "{ items: [...], pagination: { limit, offset, total, next_offset } }",
+        response:
+          "{ items: [...], pagination: { limit, offset, total, next_offset } }",
       },
       rateLimits: {
         limit: "60 requests per minute per user",
@@ -94,7 +97,8 @@ export const hackathonManifest = async (req: Request, res: Response) => {
     const manifest = {
       name: "HelpDesk Mini",
       version: "1.0.0",
-      description: "Ticketing system with SLA timers, assignments, threaded comments, and role-based access",
+      description:
+        "Ticketing system with SLA timers, assignments, threaded comments, and role-based access",
       problem_statement: "HelpDesk Mini (Tickets + SLA + Comments)",
       key_features: [
         "Ticket creation and management with SLA tracking",
@@ -115,11 +119,12 @@ export const hackathonManifest = async (req: Request, res: Response) => {
         "GET /api/_meta - API metadata",
       ],
       test_credentials: {
-        admin: { email: "admin@test.com", password: "admin123" },
+        admin: { email: "admin@mail.com", password: "admin123" },
         agent: { email: "agent@test.com", password: "agent123" },
         user: { email: "user@test.com", password: "user123" },
       },
-      architecture: "Node.js + Express backend with MongoDB, Next.js frontend with TypeScript. Features JWT authentication, automatic SLA deadline calculation, optimistic locking using version fields, comprehensive timeline logging, and role-based permissions."
+      architecture:
+        "Node.js + Express backend with MongoDB, Next.js frontend with TypeScript. Features JWT authentication, automatic SLA deadline calculation, optimistic locking using version fields, comprehensive timeline logging, and role-based permissions.",
     };
 
     res.status(200).json(manifest);
