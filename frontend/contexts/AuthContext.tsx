@@ -86,10 +86,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log("AuthContext: Starting login...");
       console.log("AuthContext: Email:", email);
 
-      const response = await authApi.login({ email, password });
-      console.log("AuthContext: API response:", response);
-      console.log("AuthContext: Response type:", typeof response);
-      console.log("AuthContext: Response keys:", Object.keys(response || {}));
+      const rawResponse = await authApi.login({ email, password });
+      console.log("AuthContext: API response:", rawResponse);
+      console.log("AuthContext: Response type:", typeof rawResponse);
+
+      // Some environments may return a JSON string instead of an object
+      const response =
+        typeof rawResponse === "string"
+          ? (JSON.parse(rawResponse) as unknown)
+          : rawResponse;
+
+      console.log(
+        "AuthContext: Parsed response type:",
+        typeof response,
+        "keys:",
+        response && typeof response === "object" ? Object.keys(response) : []
+      );
 
       // Handle different possible response structures
       let userData, tokenData;
