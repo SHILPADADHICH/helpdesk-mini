@@ -44,17 +44,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const initializeAuth = async () => {
+      if (typeof window === "undefined") {
+        setLoading(false);
+        return;
+      }
+
       const storedToken = localStorage.getItem("token");
       const storedUser = localStorage.getItem("user");
 
       if (storedToken && storedUser) {
         try {
           setToken(storedToken);
-          setUser(JSON.parse(storedUser));
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
 
           // Verify token is still valid
           const response = await authApi.getMe();
-          setUser((response as any).user);
+          const userData = (response as any).user;
+
+          // Convert backend id to frontend _id format
+          const normalizedUser = {
+            ...userData,
+            _id: userData.id || userData._id,
+          };
+
+          setUser(normalizedUser);
         } catch (error) {
           // Token is invalid, clear storage
           localStorage.removeItem("token");
@@ -69,15 +83,76 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string) => {
     try {
+      console.log("AuthContext: Starting login...");
+      console.log("AuthContext: Email:", email);
+
       const response = await authApi.login({ email, password });
-      const { user: userData, token: tokenData } = response as any;
+      console.log("AuthContext: API response:", response);
+      console.log("AuthContext: Response type:", typeof response);
+      console.log("AuthContext: Response keys:", Object.keys(response || {}));
 
-      localStorage.setItem("token", tokenData);
-      localStorage.setItem("user", JSON.stringify(userData));
+      // Handle different possible response structures
+      let userData, tokenData;
 
-      setUser(userData);
+      if (response && typeof response === "object") {
+        // Check if response has user and token directly
+        if ("user" in response && "token" in response) {
+          userData = response.user;
+          tokenData = response.token;
+        }
+        // Check if response is wrapped in a data property
+        else if (
+          "data" in response &&
+          response.data &&
+          "user" in response.data &&
+          "token" in response.data
+        ) {
+          userData = response.data.user;
+          tokenData = response.data.token;
+        }
+        // Check if response is the user data itself (fallback)
+        else if ("id" in response || "_id" in response) {
+          userData = response;
+          tokenData = null; // Token might be in a different property
+        }
+      }
+
+      console.log("AuthContext: Extracted user data:", userData);
+      console.log("AuthContext: Extracted token:", tokenData);
+
+      // Check if userData exists
+      if (!userData) {
+        throw new Error("No user data received from server");
+      }
+
+      // Check if token exists
+      if (!tokenData) {
+        throw new Error("No token received from server");
+      }
+
+      // Convert backend id to frontend _id format
+      const normalizedUser = {
+        ...userData,
+        _id: userData.id || userData._id,
+      };
+      console.log("AuthContext: Normalized user:", normalizedUser);
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem("token", tokenData);
+        localStorage.setItem("user", JSON.stringify(normalizedUser));
+        console.log("AuthContext: Stored in localStorage");
+      }
+
+      setUser(normalizedUser);
       setToken(tokenData);
+      console.log("AuthContext: State updated");
+
+      // Return the user data to ensure the state is updated
+      return normalizedUser;
     } catch (error: any) {
+      console.error("AuthContext: Login error:", error);
+      console.error("AuthContext: Error response:", error.response);
+      console.error("AuthContext: Error data:", error.response?.data);
       throw new Error(error.response?.data?.error?.message || "Login failed");
     }
   };
@@ -92,10 +167,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await authApi.register({ email, password, name, role });
       const { user: userData, token: tokenData } = response as any;
 
-      localStorage.setItem("token", tokenData);
-      localStorage.setItem("user", JSON.stringify(userData));
+      // Convert backend id to frontend _id format
+      const normalizedUser = {
+        ...userData,
+        _id: userData.id || userData._id,
+      };
 
-      setUser(userData);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("token", tokenData);
+        localStorage.setItem("user", JSON.stringify(normalizedUser));
+      }
+
+      setUser(normalizedUser);
       setToken(tokenData);
     } catch (error: any) {
       throw new Error(
@@ -105,8 +188,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+    }
     setUser(null);
     setToken(null);
   };

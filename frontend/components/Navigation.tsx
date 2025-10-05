@@ -10,17 +10,27 @@ export default function Navigation() {
 
   if (!user) {
     return (
-      <nav className="border-b bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-3">
+      <nav className="gradient-primary shadow-purple-lg">
+        <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="text-xl font-bold text-gray-900">
+            <Link
+              href="/"
+              className="text-2xl font-bold text-white hover:text-mauve transition-colors"
+            >
               HelpDesk Mini
             </Link>
-            <div className="space-x-2">
-              <Button variant="outline" asChild>
+            <div className="flex space-x-3">
+              <Button
+                variant="outline"
+                asChild
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-sm"
+              >
                 <Link href="/login">Login</Link>
               </Button>
-              <Button asChild>
+              <Button
+                asChild
+                className="bg-white text-primary hover:bg-white/90 shadow-purple"
+              >
                 <Link href="/register">Register</Link>
               </Button>
             </div>
@@ -31,54 +41,65 @@ export default function Navigation() {
   }
 
   return (
-    <nav className="border-b bg-white shadow-sm">
-      <div className="container mx-auto px-4 py-3">
+    <nav className="gradient-primary shadow-purple-lg">
+      <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <Link href="/tickets" className="text-xl font-bold text-gray-900">
+          <Link
+            href="/tickets"
+            className="text-2xl font-bold text-white hover:text-mauve transition-colors"
+          >
             HelpDesk Mini
           </Link>
 
-          <div className="flex items-center space-x-6">
-            <div className="flex space-x-4">
+          <div className="flex items-center space-x-8">
+            <div className="flex space-x-6">
               <Link
                 href="/tickets"
-                className="text-gray-600 hover:text-gray-900 transition-colors"
+                className="text-white/90 hover:text-white transition-colors font-medium relative group"
               >
                 Tickets
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all group-hover:w-full"></span>
               </Link>
               {["agent", "admin"].includes(user.role) && (
                 <>
                   <Link
                     href="/tickets/breached"
-                    className="text-gray-600 hover:text-gray-900 transition-colors"
+                    className="text-white/90 hover:text-white transition-colors font-medium relative group"
                   >
                     Breached SLA
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all group-hover:w-full"></span>
                   </Link>
                   <Link
                     href="/tickets/new"
-                    className="text-gray-600 hover:text-gray-900 transition-colors"
+                    className="text-white/90 hover:text-white transition-colors font-medium relative group"
                   >
                     New Ticket
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all group-hover:w-full"></span>
                   </Link>
                 </>
               )}
             </div>
 
-            <div className="flex items-center space-x-3">
-              <div className="text-sm">
-                <div className="font-medium text-gray-900">{user.name}</div>
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-white/90">
+                <div className="font-semibold">{user.name}</div>
                 <div
                   className={cn(
-                    "text-xs",
-                    user.role === "admin" && "text-red-600",
-                    user.role === "agent" && "text-blue-600",
-                    user.role === "user" && "text-gray-600"
+                    "text-xs font-medium px-2 py-1 rounded-full",
+                    user.role === "admin" && "bg-red-500/20 text-red-200",
+                    user.role === "agent" && "bg-blue-500/20 text-blue-200",
+                    user.role === "user" && "bg-white/20 text-white/80"
                   )}
                 >
                   {user.role.toUpperCase()}
                 </div>
               </div>
-              <Button variant="outline" size="sm" onClick={logout}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={logout}
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-sm"
+              >
                 Logout
               </Button>
             </div>

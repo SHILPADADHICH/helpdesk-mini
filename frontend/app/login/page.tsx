@@ -12,6 +12,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  LoginIllustration,
+  FloatingShapes,
+} from "@/components/ui/illustrations";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -28,9 +32,23 @@ export default function LoginPage() {
     setError("");
 
     try {
-      await login(email, password);
-      router.push("/tickets");
+      console.log("Starting login process...");
+      console.log("Email:", email);
+      console.log("Password:", password);
+
+      const userData = await login(email, password);
+      console.log("Login successful, user data:", userData);
+
+      // Only redirect if we have user data
+      if (userData) {
+        console.log("Redirecting to /tickets");
+        router.push("/tickets");
+      } else {
+        console.log("No user data received");
+        setError("Login successful but no user data received");
+      }
     } catch (err: unknown) {
+      console.error("Login error:", err);
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {
       setLoading(false);
@@ -38,34 +56,58 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">HelpDesk Mini</h1>
-          <p className="mt-2 text-gray-600">Sign in to your account</p>
+    <div className="min-h-screen gradient-animated flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      <FloatingShapes />
+      <div className="max-w-md w-full space-y-8 relative z-10">
+        <div className="text-center animate-fade-in">
+          <div className="w-32 h-32 mx-auto mb-6 animate-scale-in">
+            <LoginIllustration />
+          </div>
+          <h1 className="text-4xl font-bold text-white mb-2 animate-slide-up">
+            HelpDesk Mini
+          </h1>
+          <p
+            className="text-white/80 text-lg animate-slide-up"
+            style={{ animationDelay: "0.2s" }}
+          >
+            Sign in to your account
+          </p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Sign In</CardTitle>
-            <CardDescription>
-              Enter your email and password to access your account
+        <Card className="gradient-card shadow-purple-lg border-white/20">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl text-gradient">
+              Welcome Back
+            </CardTitle>
+            <CardDescription className="text-muted-foreground">
+              Enter your credentials to access your dashboard
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-2"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
                   {error}
                 </div>
               )}
 
-              <div>
+              <div className="space-y-2">
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className="block text-sm font-medium text-foreground"
                 >
-                  Email
+                  Email Address
                 </label>
                 <input
                   id="email"
@@ -73,15 +115,15 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-background/50 backdrop-blur-sm"
                   placeholder="Enter your email"
                 />
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <label
                   htmlFor="password"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className="block text-sm font-medium text-foreground"
                 >
                   Password
                 </label>
@@ -91,36 +133,69 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-background/50 backdrop-blur-sm"
                   placeholder="Enter your password"
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Signing in..." : "Sign In"}
+              <Button
+                type="submit"
+                className="w-full gradient-primary hover:opacity-90 shadow-purple-lg hover-lift"
+                disabled={loading}
+                size="lg"
+              >
+                {loading ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Signing in...</span>
+                  </div>
+                ) : (
+                  "Sign In"
+                )}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 Don&apos;t have an account?{" "}
                 <Link
                   href="/register"
-                  className="text-blue-600 hover:text-blue-500"
+                  className="text-primary hover:text-primary/80 font-medium transition-colors"
                 >
-                  Sign up
+                  Create one now
                 </Link>
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <div className="text-center text-sm text-gray-500">
-          <p>Test Credentials:</p>
-          <p>Admin: admin@mail.com / admin123</p>
-          <p>Agent: agent@test.com / agent123</p>
-          <p>User: user@test.com / user123</p>
-        </div>
+        <Card className="gradient-card border-white/20">
+          <CardContent className="p-6">
+            <h3 className="text-lg font-semibold text-center mb-4 text-gradient">
+              Test Credentials
+            </h3>
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
+                <span className="font-medium">Admin:</span>
+                <span className="text-muted-foreground">
+                  admin@mail.com / admin123
+                </span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
+                <span className="font-medium">Agent:</span>
+                <span className="text-muted-foreground">
+                  agent@test.com / agent123
+                </span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
+                <span className="font-medium">User:</span>
+                <span className="text-muted-foreground">
+                  user@test.com / user123
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

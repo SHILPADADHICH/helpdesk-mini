@@ -2,27 +2,42 @@ import axios from "axios";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+console.log("API_BASE_URL:", API_BASE_URL);
+
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: 10000, // 10 second timeout
 });
 
 // Add auth token to requests
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token && config.headers) {
-    config.headers.Authorization = `Bearer ${token}`;
+  console.log("API Request:", config.method?.toUpperCase(), config.url);
+  console.log("API Request data:", config.data);
+
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("token");
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
   }
   return config;
 });
 
 // Handle auth errors
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log("API Response:", response.status, response.config.url);
+    console.log("API Response data:", response.data);
+    return response;
+  },
   (error) => {
-    if (error.response?.status === 401) {
+    console.error("API Error:", error.response?.status, error.config?.url);
+    console.error("API Error data:", error.response?.data);
+
+    if (error.response?.status === 401 && typeof window !== "undefined") {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       window.location.href = "/login";
@@ -113,10 +128,34 @@ export const authApi = {
   },
 
   login: async (data: { email: string; password: string }) => {
-    const response = await apiClient.post<
-      ApiResponse<{ user: User; token: string }>
-    >("/api/auth/login", data);
-    return response.data;
+    console.log(
+      "API: Making login request to:",
+      API_BASE_URL + "/api/auth/login"
+    );
+    console.log("API: Request data:", data);
+
+    try {
+      const response = await apiClient.post<
+        ApiResponse<{ user: User; token: string }>
+      >("/api/auth/login", data);
+      console.log("API: Response received:", response);
+      console.log("API: Response data:", response.data);
+      console.log("API: Response data type:", typeof response.data);
+      console.log("API: Response data keys:", Object.keys(response.data || {}));
+      console.log("API: Full response structure:", {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers,
+        data: response.data,
+      });
+
+      // The backend returns the data directly, not wrapped in ApiResponse
+      // So we return response.data directly
+      return response.data;
+    } catch (error) {
+      console.error("API: Request failed:", error);
+      throw error;
+    }
   },
 
   getMe: async () => {
