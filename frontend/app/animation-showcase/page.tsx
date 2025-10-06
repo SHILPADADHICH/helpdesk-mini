@@ -1,34 +1,33 @@
 "use client";
 
-import * as React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  AnimatedAlertIcon,
+  AnimatedCheckIcon,
+  AnimatedClockIcon,
+  AnimatedDots,
+  AnimatedProgressBar,
+  AnimatedStarIcon,
+  AnimatedTicketIcon,
+  AnimatedUserIcon,
+  AnimatedWave,
+} from "@/components/ui/animated-icons";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   EmptyTicketsIllustration,
-  LoginIllustration,
-  SuccessIllustration,
-  LoadingIllustration,
   ErrorIllustration,
   FloatingShapes,
   GradientOrb,
+  LoadingIllustration,
+  LoginIllustration,
+  SuccessIllustration,
 } from "@/components/ui/illustrations";
-import {
-  AnimatedTicketIcon,
-  AnimatedUserIcon,
-  AnimatedClockIcon,
-  AnimatedCheckIcon,
-  AnimatedAlertIcon,
-  AnimatedStarIcon,
-  AnimatedDots,
-  AnimatedWave,
-  AnimatedProgressBar,
-} from "@/components/ui/animated-icons";
-import {
-  PageTransition,
+import PageTransition, {
   AnimatedWrapper,
-  StaggeredList,
   LoadingTransition,
+  StaggeredList,
 } from "@/components/ui/page-transitions";
+import * as React from "react";
 
 export default function AnimationShowcase() {
   const [isLoading, setIsLoading] = React.useState(false);

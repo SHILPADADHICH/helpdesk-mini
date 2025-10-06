@@ -1,10 +1,10 @@
-import * as React from "react";
 import { cn } from "@/lib/utils";
+import * as React from "react";
 
 // Animated Icon wrapper
 const AnimatedIcon: React.FC<{
   children: React.ReactNode;
-  animation?: "spin" | "bounce" | "pulse" | "float" | "wiggle";
+  animation?: "spin" | "bounce" | "pulse" | "float" | "wiggle" | "twinkle";
   className?: string;
 }> = ({ children, animation = "pulse", className }) => {
   const animationClasses = {
@@ -13,6 +13,7 @@ const AnimatedIcon: React.FC<{
     pulse: "animate-pulse",
     float: "animate-float",
     wiggle: "animate-wiggle",
+    twinkle: "animate-twinkle",
   };
 
   return (

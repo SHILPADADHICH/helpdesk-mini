@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { authApi } from "@/lib/api";
+import { useState } from "react";
 
 export default function DebugLogin() {
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState<string>("");
 
   const testLogin = async () => {
@@ -15,11 +15,11 @@ export default function DebugLogin() {
         password: "admin123",
       });
       console.log("API Response:", response);
-      setResult(response);
+      setResult(response as Record<string, unknown>);
       setError("");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("API Error:", err);
-      setError(err.message || "Unknown error");
+      setError(err instanceof Error ? err.message : "Unknown error");
       setResult(null);
     }
   };

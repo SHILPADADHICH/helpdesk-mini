@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import axios from "axios";
+import { useState } from "react";
 
 export default function DirectAPITest() {
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState<string>("");
 
   const testDirectAPI = async () => {
@@ -25,11 +25,11 @@ export default function DirectAPITest() {
       );
 
       console.log("Direct API Response:", response);
-      setResult(response.data);
+      setResult(response.data as Record<string, unknown>);
       setError("");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Direct API Error:", err);
-      setError(err.message || "Unknown error");
+      setError(err instanceof Error ? err.message : "Unknown error");
       setResult(null);
     }
   };

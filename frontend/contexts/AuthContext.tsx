@@ -12,7 +12,7 @@ import React, {
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
   register: (
     email: string,
     password: string,
@@ -93,7 +93,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Some environments may return a JSON string instead of an object
       const response =
         typeof rawResponse === "string"
-          ? (JSON.parse(rawResponse) as unknown)
+          ? (JSON.parse(rawResponse) as any)
           : rawResponse;
 
       console.log(
@@ -104,7 +104,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       );
 
       // Handle different possible response structures
-      let userData, tokenData;
+      let userData: any,
+        tokenData: string | null = null;
 
       if (response && typeof response === "object") {
         // Check if response has user and token directly
@@ -142,10 +143,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error("No token received from server");
       }
 
-      // Convert backend id to frontend _id format
-      const normalizedUser = {
-        ...userData,
+      // Convert backend id to frontend _id format and ensure all User properties
+      const normalizedUser: User = {
         _id: userData.id || userData._id,
+        email: userData.email,
+        name: userData.name,
+        role: userData.role,
+        createdAt: userData.createdAt || new Date().toISOString(),
+        updatedAt: userData.updatedAt || new Date().toISOString(),
       };
       console.log("AuthContext: Normalized user:", normalizedUser);
 
@@ -159,7 +164,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setToken(tokenData);
       console.log("AuthContext: State updated");
 
-      // Return the user data to ensure the state is updated
       return normalizedUser;
     } catch (error: any) {
       console.error("AuthContext: Login error:", error);
